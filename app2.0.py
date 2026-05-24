@@ -15,6 +15,9 @@ ligi = {
     "Serie A": "SA",
     "Laliga" : "PD",}
 
+
+
+
 # --- Functions ---
 def construieste_url(cod, cod_status,option_status):
     if option_status == "All":
@@ -80,7 +83,11 @@ def afiseaza_clasament(clasament):
             st.write(echipa["lost"])
         with col8:
             st.write(puncte)
-           
+
+def construieste_url_echipa(id_echipa):
+    url =  f"https://api.football-data.org/v4/teams/{id_echipa}/matches?status=FINISHED"
+    response = requests.get(url,headers={"X-Auth-Token": API_KEY} )
+    return response
 
 
         
@@ -93,7 +100,7 @@ option_league = st.selectbox(
     "Liga: ",
     ("Laliga", "Serie A", "Premier League"),
 )
-tab1, tab2 = st.tabs(["Meciuri", "Clasament"])
+tab1, tab2, tab3  = st.tabs(["Meciuri", "Clasament", "Predictii"])
 cod = ligi[option_league]
 
 
@@ -101,6 +108,7 @@ response_clasament = construieste_url_clasament(cod)
 date_clasament =  response_clasament.json()
 clasament = date_clasament["standings"][0]["table"]
 st.write(date_clasament)
+echipe = [echipa["team"]["shortName"] for echipa in clasament]
 
 with tab1:
     
@@ -118,6 +126,33 @@ with tab1:
 
 with tab2:
     afiseaza_clasament(clasament)
+with tab3: 
+        echipe = [echipa["team"]["shortName"] for echipa in clasament]
+        ID_echipe = {
+    echipa["team"]["shortName"] : echipa["team"]["id"] for echipa in clasament
+} #extrag numele si le atasez un ID
+        #lista cu echipe pt a putea selecta in selectbox
+        option_echipa1 = st.selectbox(
+            "Prima echipa: ",
+            echipe
+
+
+        )
+        option_echipa2 = st.selectbox(
+            "A doua echipa: ",
+            echipe
+
+
+        )
+        id_echipa1 = ID_echipe[option_echipa1]
+        id_echipa2 = ID_echipe[option_echipa2]
+        response_echipa1 = construieste_url_echipa(id_echipa1)
+        date_echipa1 = response_echipa1.json()
+        response_echipa2 = construieste_url_echipa(id_echipa2)
+        date_echipa2 = response_echipa2.json()
+        st.write(date_echipa1, date_echipa2)
+        
+
 
 
 
